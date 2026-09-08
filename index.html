@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="PDFを外部に送信せず、ブラウザ内で名前のハンコを追加。書類ごとの捺印設定をURLで保存できます。" />
+  <meta name="referrer" content="no-referrer" />
+  <title>PDF捺印室 — ブラウザでPDFにハンコ</title>
+  <script type="module" crossorigin src="./assets/index-DGFJnPsO.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-Bpklu5ma.css">
+</head>
+<body>
+  <header class="topbar"><div class="brand"><span class="brand-mark" aria-hidden="true">印</span><div>PDF捺印室<small>書類に、いつものハンコを。</small></div></div><span class="privacy"><span aria-hidden="true">●</span> PDFはこのブラウザ内で処理</span></header>
+  <main>
+    <div class="intro"><div><p class="eyebrow">PDF STAMP WORKSPACE</p><h1>PDFにハンコを押す</h1><p>書類を選び、位置を確認して保存。捺印設定はURLで再利用できます。</p></div></div>
+    <div class="workspace">
+      <aside class="panel settings">
+        <section class="file-section"><h2><span class="step">01</span> 書類を選ぶ</h2><label class="file-picker" for="pdf-file"><span class="file-icon" aria-hidden="true">＋</span><strong>PDFファイルを選択</strong><span>またはここにドラッグ＆ドロップ</span><input id="pdf-file" type="file" accept=".pdf,application/pdf" /></label><p id="file-info" class="file-info">ファイルは外部に送信されません。</p><button id="sample" class="text-button" type="button">サンプルPDFで試す →</button></section>
+        <section><h2><span class="step">02</span> ハンコを設定</h2>
+          <form id="stamp-form" novalidate>
+            <label>捺印する文字<input id="text" name="text" type="text" maxlength="24" value="高橋" autocomplete="off" required /><small>1〜12文字・縦書き</small></label>
+            <div class="fields"><label>ページ番号<input id="page" name="page" type="number" min="1" step="1" value="1" required /></label><label>単位<select id="unit" name="unit"><option value="mm">mm（ミリメートル）</option><option value="pt">pt（ポイント）</option></select></label></div>
+            <div class="fields"><label>X：左端から <span class="unit-label">mm</span><input id="x" name="x" type="number" min="0" step="any" value="20" required /></label><label>Y：上端から <span class="unit-label">mm</span><input id="y" name="y" type="number" min="0" step="any" value="20" required /></label></div>
+            <p class="hint">ページ左上から、回転前のハンコの左上までの距離です。</p>
+            <div class="fields"><label>サイズ（直径）<span class="unit-label">mm</span><input id="size" name="size" type="number" min="0.01" step="any" value="20" required /></label><label>回転角度（°）<input id="rotation" name="rotation" type="number" min="-360" max="360" step="any" value="0" required /></label></div>
+            <label>不透明度 <span id="opacity-value">100%</span><input id="opacity" name="opacity" type="range" min="0" max="1" step="0.01" value="1" /><small>0＝透明 ／ 1＝不透明 ・ 回転は時計回り</small></label>
+            <div class="form-footer"><button id="reset" class="text-button" type="button">初期値に戻す</button><span>赤い丸印・縦書き</span></div>
+          </form>
+        </section>
+      </aside>
+      <div class="right-column">
+        <section class="panel preview-panel"><div class="panel-heading"><h2><span class="step">03</span> 仕上がりを確認</h2><span id="page-info" class="badge">PDF未選択</span></div><div id="preview-area" class="preview-area"><div id="empty-state" class="empty-state"><div class="paper-symbol" aria-hidden="true"><span></span><span></span><span></span><b>印</b></div><h3>ここに書類を表示します</h3><p>左側からPDFを選択してください。<br />設定を変えると、捺印結果が反映されます。</p></div><canvas id="preview" aria-label="捺印済みPDFのプレビュー" hidden></canvas></div><div class="preview-footer"><span>表示は選択ページのみ・保存は全ページ</span><span id="dimensions">—</span></div></section>
+        <div id="status" role="status" aria-live="polite">PDFを選択すると、捺印の仕上がりを確認できます。</div>
+        <div class="save-row"><p>元のPDFは変更せず、<br />捺印済みのコピーを保存します。</p><button id="download" class="primary" type="button" disabled>捺印済みPDFを保存 <span aria-hidden="true">↓</span></button></div>
+        <section class="panel url-panel"><div><h2>この設定を、次の書類にも。</h2><p>設定URLをブックマークしておくと、同じ位置・サイズで再開できます。</p></div><div class="url-row"><input id="settings-url" type="text" readonly aria-label="現在の設定URL" /><button id="copy-url" class="secondary" type="button">URLをコピー</button></div><p id="url-status" class="hint" role="status">URLに保存されるのは捺印設定のみです。PDFは含まれません。</p></section>
+      </div>
+    </div>
+    <footer>PDF捺印室 <span>ブラウザ内処理 / アカウント不要</span></footer>
+  </main>
+</body>
+</html>
