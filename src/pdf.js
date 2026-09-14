@@ -17,11 +17,17 @@ export function drawStamp(canvas, text) {
   return canvas;
 }
 export async function stampPdf(originalBytes, pngBytes, settings, viewport) {
+  return stampMultiplePdf(originalBytes, [{ pngBytes, settings, viewport }]);
+}
+export async function stampMultiplePdf(originalBytes, entries) {
+  if (entries.length < 1 || entries.length > 4) throw new Error('捺印するハンコは1〜4個にしてください。');
   const pdf = await PDFDocument.load(originalBytes, { updateMetadata: false });
+  for (const { pngBytes, settings, viewport } of entries) {
   if (settings.page > pdf.getPageCount()) throw new Error(`このPDFは${pdf.getPageCount()}ページです。ページ番号を変更してください。`);
   const stamp = await pdf.embedPng(pngBytes);
   const { angle, ...placement } = imagePlacement(settings, viewport);
   pdf.getPage(settings.page - 1).drawImage(stamp, { ...placement, rotate: degrees(angle) });
+  }
   return pdf.save();
 }
 export async function createSamplePdf() {

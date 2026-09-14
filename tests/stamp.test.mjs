@@ -5,7 +5,8 @@ import { PDFDocument, degrees, PDFName, PDFNumber } from 'pdf-lib';
 import * as pdfjs from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { fileURLToPath } from 'node:url';
 import { DEFAULTS, parseSettings, validateSettings, settingsUrl, inPoints, imagePlacement, exceedsPage } from '../src/settings.js';
-import { drawStamp, stampPdf, createSamplePdf } from '../src/pdf.js';
+import { drawStamp, stampPdf, stampMultiplePdf, createSamplePdf } from '../src/pdf.js';
+import { defaultSlots, parseSlots, slotsUrl, validateSlots } from '../src/settings.js';
 
 const near = (actual, expected, tolerance = 0.001) => assert.ok(Math.abs(actual - expected) < tolerance, `${actual} ≠ ${expected}`);
 const pdfOptions = { standardFontDataUrl: fileURLToPath(new URL('../node_modules/pdfjs-dist/standard_fonts/', import.meta.url)).replaceAll('\\', '/') };
@@ -27,6 +28,47 @@ test('sample is a readable two-page A4 PDF', async () => {
   const doc = await PDFDocument.load(await createSamplePdf());
   assert.equal(doc.getPageCount(), 2);
   near(doc.getPage(0).getWidth(), 595.276);
+});
+test('four slots preserve legacy URLs, independent settings and disabled registrations', () => {
+  const legacy = parseSlots('?text=山田&page=2&x=0&opacity=0');
+  assert.equal(legacy[0].text, '山田');
+  assert.equal(legacy[0].page, 2);
+  assert.equal(legacy.filter(s => s.enabled).length, 1);
+  const slots = defaultSlots().map((s, i) => ({ ...s, enabled: i !== 2, page: i + 1, unit: i % 2 ? 'pt' : 'mm', opacity: i / 4, rotation: i ? i * -15 : 0 }));
+  const url = new URL(slotsUrl(slots, 'https://example.com/pdf-stamp-system/'));
+  assert.deepEqual(parseSlots(url.search), slots);
+  assert.equal(parseSlots('?text2=田中')[1].enabled, true);
+  assert.equal(parseSlots('?text2=田中&enabled2=0')[1].enabled, false);
+  assert.equal(parseSlots('?enabled=0')[0].enabled, false);
+  assert.throws(() => parseSlots('?page3=0'), /枠3/);
+  assert.throws(() => parseSlots('?enabled4=yes'), /枠4/);
+  assert.throws(() => validateSlots([...slots, slots[0]]), /4枠/);
+});
+test('four distinct stamps export together on the same or different pages', async () => {
+  const original = await fixture(90);
+  const source = await pdfjs.getDocument({ ...pdfOptions, data: original.slice() }).promise;
+  for (const targetPages of [[1, 1, 1, 1], [1, 2, 1, 2]]) {
+    const entries = [];
+    for (let i = 0; i < 4; i++) {
+      const settings = { ...DEFAULTS, text: ['高橋', '田中', '佐々木', '鈴木'][i], page: targetPages[i], unit: 'pt', x: 15 + i * 85, y: 40, size: 45, rotation: i * 30 };
+      entries.push({ settings, pngBytes: drawStamp(createCanvas(1, 1), settings.text).toBuffer('image/png'), viewport: (await source.getPage(settings.page)).getViewport({ scale: 1 }) });
+    }
+    const output = await stampMultiplePdf(original, entries);
+    const doc = await pdfjs.getDocument({ ...pdfOptions, data: output }).promise;
+    for (let pageNumber = 1; pageNumber <= 2; pageNumber++) {
+      const page = await doc.getPage(pageNumber);
+      const canvas = await render(page);
+      for (let i = 0; i < 4; i++) {
+        const area = createCanvas(50, 50);
+        area.getContext('2d').drawImage(canvas, 13 + i * 85, 38, 50, 50, 0, 0, 50, 50);
+        assert.equal(redBounds(area).count > 0, targetPages[i] === pageNumber, `slot ${i + 1}, page ${pageNumber}`);
+      }
+      assert.ok((await page.getTextContent()).items.some(item => item.str.includes('Original text')));
+    }
+    await assert.rejects(stampMultiplePdf(original, [...entries, entries[0]]), /1〜4/);
+    await doc.loadingTask.destroy();
+  }
+  await source.loadingTask.destroy();
 });
 
 async function fixture(rotation, userUnit = 1) {

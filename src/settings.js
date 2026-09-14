@@ -1,5 +1,36 @@
 export const DEFAULTS = Object.freeze({ text: '高橋', page: 1, x: 20, y: 20, size: 20, unit: 'mm', opacity: 1, rotation: 0 });
 export const KEYS = Object.keys(DEFAULTS);
+export function defaultSlots() {
+  return ['高橋', '田中', '佐々木', '鈴木'].map((text, i) => ({ ...DEFAULTS, text, x: 20 + i * 25, enabled: i === 0 }));
+}
+export function validateSlots(slots) {
+  if (!Array.isArray(slots) || slots.length !== 4) throw new Error('ハンコの登録枠は4枠です。');
+  return slots.map((slot, i) => {
+    try { return { ...validateSettings(slot), enabled: Boolean(slot.enabled) }; }
+    catch (error) { throw new Error(`枠${i + 1}：${error.message}`); }
+  });
+}
+export function parseSlots(search) {
+  const params = new URLSearchParams(search);
+  return validateSlots(defaultSlots().map((slot, i) => {
+    const suffix = i === 0 ? '' : String(i + 1);
+    const fields = KEYS.filter(key => params.has(key + suffix));
+    const flag = params.get('enabled' + suffix);
+    if (flag !== null && !['0', '1'].includes(flag)) throw new Error(`枠${i + 1}：enabledは0または1で指定してください。`);
+    return { ...slot, ...Object.fromEntries(fields.map(key => [key, params.get(key + suffix)])), enabled: flag === null ? i === 0 || fields.length > 0 : flag === '1' };
+  }));
+}
+export function slotsUrl(slots, href) {
+  const url = new URL(href);
+  const params = new URLSearchParams();
+  validateSlots(slots).forEach((slot, i) => {
+    const suffix = i === 0 ? '' : String(i + 1);
+    for (const key of KEYS) params.set(key + suffix, slot[key]);
+    params.set('enabled' + suffix, slot.enabled ? '1' : '0');
+  });
+  url.search = params.toString(); url.hash = '';
+  return url.href;
+}
 export function validateSettings(input) {
   const s = { ...DEFAULTS, ...input };
   s.text = String(s.text).trim();
