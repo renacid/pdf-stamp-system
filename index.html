@@ -6,8 +6,8 @@
   <meta name="description" content="PDFを外部に送信せず、ブラウザ内で名前のハンコを追加。書類ごとの捺印設定をURLで保存できます。" />
   <meta name="referrer" content="no-referrer" />
   <title>PDF捺印室 — ブラウザでPDFにハンコ</title>
-  <script type="module" crossorigin src="./assets/index-CLcK_nku.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-Bpklu5ma.css">
+  <script type="module" crossorigin src="./assets/index-CKZwkLgD.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-D14SDs77.css">
 </head>
 <body>
   <header class="topbar"><div class="brand"><span class="brand-mark" aria-hidden="true">印</span><div>PDF捺印室<small>書類に、いつものハンコを。</small></div></div><span class="privacy"><span aria-hidden="true">●</span> PDFはこのブラウザ内で処理</span></header>
@@ -17,15 +17,24 @@
       <aside class="panel settings">
         <section class="file-section"><h2><span class="step">01</span> 書類を選ぶ</h2><label class="file-picker" for="pdf-file"><span class="file-icon" aria-hidden="true">＋</span><strong>PDFファイルを選択</strong><span>またはここにドラッグ＆ドロップ</span><input id="pdf-file" type="file" accept=".pdf,application/pdf" /></label><p id="file-info" class="file-info">ファイルは外部に送信されません。</p><button id="sample" class="text-button" type="button">サンプルPDFで試す →</button></section>
         <section><h2><span class="step">02</span> ハンコを設定</h2>
+          <div class="stamp-tabs" role="tablist" aria-label="ハンコの登録枠">
+            <button type="button" id="stamp-tab-0" role="tab" aria-controls="stamp-editor" aria-selected="true" data-slot="0">1 高橋</button>
+            <button type="button" id="stamp-tab-1" role="tab" aria-controls="stamp-editor" aria-selected="false" tabindex="-1" data-slot="1">2 田中</button>
+            <button type="button" id="stamp-tab-2" role="tab" aria-controls="stamp-editor" aria-selected="false" tabindex="-1" data-slot="2">3 佐々木</button>
+            <button type="button" id="stamp-tab-3" role="tab" aria-controls="stamp-editor" aria-selected="false" tabindex="-1" data-slot="3">4 鈴木</button>
+          </div>
+          <div id="stamp-editor" role="tabpanel" aria-labelledby="stamp-tab-0">
           <form id="stamp-form" novalidate>
+            <div class="slot-toggle"><label><input id="enabled" type="checkbox" checked /> このハンコを捺印する</label><span id="stamp-count">1 / 4 使用中</span></div>
             <label>捺印する文字<input id="text" name="text" type="text" maxlength="24" value="高橋" autocomplete="off" required /><small>1〜12文字・縦書き</small></label>
             <div class="fields"><label>ページ番号<input id="page" name="page" type="number" min="1" step="1" value="1" required /></label><label>単位<select id="unit" name="unit"><option value="mm">mm（ミリメートル）</option><option value="pt">pt（ポイント）</option></select></label></div>
             <div class="fields"><label>X：左端から <span class="unit-label">mm</span><input id="x" name="x" type="number" min="0" step="any" value="20" required /></label><label>Y：上端から <span class="unit-label">mm</span><input id="y" name="y" type="number" min="0" step="any" value="20" required /></label></div>
             <p class="hint">ページ左上から、回転前のハンコの左上までの距離です。</p>
             <div class="fields"><label>サイズ（直径）<span class="unit-label">mm</span><input id="size" name="size" type="number" min="0.01" step="any" value="20" required /></label><label>回転角度（°）<input id="rotation" name="rotation" type="number" min="-360" max="360" step="any" value="0" required /></label></div>
             <label>不透明度 <span id="opacity-value">100%</span><input id="opacity" name="opacity" type="range" min="0" max="1" step="0.01" value="1" /><small>0＝透明 ／ 1＝不透明 ・ 回転は時計回り</small></label>
-            <div class="form-footer"><button id="reset" class="text-button" type="button">初期値に戻す</button><span>赤い丸印・縦書き</span></div>
+            <div class="form-footer"><button id="reset" class="text-button" type="button">この枠を初期値に戻す</button><span>赤い丸印・縦書き</span></div>
           </form>
+          </div>
         </section>
       </aside>
       <div class="right-column">
